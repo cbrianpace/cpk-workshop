@@ -1,0 +1,385 @@
+--------------------------------------
+Useful Commands
+--------------------------------------
+
+-- Tail log of all pods
+kubectl stern --selector postgres-operator.crunchydata.com/instance --tail 10
+
+-- Roles of pods
+kubectl get pod -L postgres-operator.crunchydata.com/role -l postgres-operator.crunchydata.com/instance
+
+-- Set Namespace Context
+kubectl ns postgres-operator
+
+-- Exec into Primary
+kubectl exec -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -c database -- bash
+
+-- Restart Cluster
+kubectl patch postgrescluster/hippo -n postgres-operator --type merge --patch '{"spec":{"metadata":{"annotations":{"restarted":"'"$(date)"'"}}}}'
+
+-- Manual backup
+kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
+
+--------------------------------------
+Environment Setup
+--------------------------------------
+kubectl get nodes
+
+kubectl create namespace postgres-operator
+
+kubectl ns postgres-operator
+
+--------------------------------------
+Operator Installation
+--------------------------------------
+kubectl apply --server-side -k install/default
+
+kubectl get pods
+
+kubectl explain postgrescluster
+
+--------------------------------------
+Create Cluster
+--------------------------------------
+kubectl apply -k hippo
+
+kubectl get pods
+
+kubectl get postgrescluster
+
+kubectl get statefulset
+
+kubectl get pods
+
+--------------------------------------
+Operator Overview
+--------------------------------------
+kubectl explain postgrescluster.specs.backups
+
+--------------------------------------
+Monitoring
+--------------------------------------
+kubectl create namespace pgmonitor
+
+kubectl apply -k monitoring
+
+kubectl get pods -n pgmonitor
+
+kubectl patch service crunchy-grafana -n pgmonitor -p '{"spec":{"type": "LoadBalancer"}}'
+
+kubectl get services -n pgmonitor -w
+
+kubectl exec -it -c database $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- bash
+
+pgbench --initialize --scale=10 postgres
+
+pgbench --time=300 -c 10 postgres
+
+--------------------------------------
+Manage Postgres Cluster
+--------------------------------------
+kubectl get postgrescluster --all-namespaces
+
+kubectl describe $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name)
+
+kubectl get pod -L postgres-operator.crunchydata.com/role -l postgres-operator.crunchydata.com/instance
+
+kubectl get statefulsets
+
+kubectl get services
+
+kubectl get endpoints
+
+kubectl describe service hippo-replicas
+
+kubectl describe endpoints hippo-ha
+
+kubectl get secrets
+
+kubectl get secret hippo-pguser-hippo -o yaml
+
+export PGPASSWORD=$(kubectl get secret hippo-pguser-hippo --template={{.data.password}} | base64 --decode)
+
+kubectl get configmaps
+
+kubectl get pv
+
+kubectl delete -k hippo
+
+kubectl get pods
+
+kubectl get statefulsets
+
+kubectl get postgrescluster --all-namespaces
+
+kubectl apply -k hippo
+
+--------------------------------------
+Connecting to Postgres Cluster
+--------------------------------------
+kubectl get services
+
+kubectl apply -k hippo
+
+kubectl get services -w
+
+export PGPASSWORD=$(kubectl get secret hippo-pguser-hippo --template={{.data.password}} | base64 --decode)
+
+psql "postgresql://hippo@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require"
+
+
+--------------------------------------
+Session 2
+--------------------------------------
+kubectl get postgresclusters --all-namespaces
+
+kubectl config set-context --current --namespace=postgres-operator
+
+--------------------------------------
+Modify Postgres Cluster
+--------------------------------------
+kubectl apply -k hippo
+
+kubectl get pods
+
+kubectl get pod -L postgres-operator.crunchydata.com/role -l postgres-operator.crunchydata.com/instance
+
+-- User/Database Management
+kubectl apply -k hippo
+
+kubectl get secrets
+
+psql "postgresql://hippo@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require" -c "\du"
+
+kubectl apply -k hippo
+
+psql "postgresql://hippo@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require" -c "\l"
+
+-- User/Database Management: Change password
+
+export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.password}} | base64 --decode)
+
+psql  "user=appuser sslmode=prefer host=hippo-primary.postgres-operator dbname=appdev"
+
+kubectl patch secret hippo-pguser-appuser -p '{"stringData":{"password":"Welcome1","verifier":""}}'
+
+export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.password}} | base64 --decode)
+
+psql  "user=appuser sslmode=prefer host=hippo-primary.postgres-operator dbname=appdev"
+
+cat pguser-student.yaml
+
+-- Minor Version Upgrade
+watch -n 5 "kubectl get pod -L postgres-operator.crunchydata.com/role -l postgres-operator.crunchydata.com/instance"
+
+export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.password}} | base64 --decode)
+
+psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
+
+kubectl apply –k hippo
+
+psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
+
+-- Postgres Parameter Modification
+PGSSLMODE=prefer psql -U appuser -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
+
+kubectl apply -k hippo
+
+PGSSLMODE=prefer psql -U appuser -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
+
+kubectl patch postgrescluster/hippo -n postgres-operator --type merge --patch '{"spec":{"metadata":{"annotations":{"restarted":"'"$(date)"'"}}}}'
+
+PGSSLMODE=prefer psql -U appuser -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
+
+-- Database initialization Script
+kubectl apply -k hippo
+
+kubectl describe postgrescluster hippo
+
+psql -U appuser -h hippo-primary.postgres-operator -c "\dt"
+
+--------------------------------------
+High Availability
+--------------------------------------
+kubectl get services
+
+kubectl delete service hippo-primary
+
+kubectl get services
+
+watch -n 5 "kubectl get pod -L postgres-operator.crunchydata.com/role -l postgres-operator.crunchydata.com/instance"
+
+-- Postgres HA by Patroni
+kubectl exec -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -c database -- bash
+
+cd /pgdata
+
+ls pg15
+
+rm –rf pg15*
+
+ls
+
+-- Pod Scheduling
+kubectl get pods -o wide
+
+kubectl get nodes
+
+-- Cross Cluster Streaming Replication
+kubectl delete -k hippo
+
+kubectl apply -k hippo
+
+kubectl get services
+
+psql -h hippo-primary.postgres-operator -c "insert into test (chkdate) values (current_timestamp)"
+
+psql -h hippo-primary.postgres-operator -c "select * from test"
+
+--------------------------------------
+Backup and Restore
+--------------------------------------
+--pgBackRest Global Configuration
+
+kubectl apply -k hippo
+
+kubectl scale statefulset hippo-repo-host --replicas=0
+
+--Backup Demonstration Setup
+
+kubectl exec -it -c database $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- bash
+
+while(true); do psql -c "insert into test (chkdate) values (current_timestamp)"; sleep 60; done
+
+--Manual Full Backup
+kubectl apply -k hippo
+
+kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
+
+kubectl get pods
+
+--Manual Incremental Backup
+kubectl exec hippo-repo-host-0 -- pgbackrest info
+
+kubectl apply -k hippo
+
+kubectl annotate postgrescluster hippo --overwrite postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
+
+kubectl get pods
+
+kubectl exec hippo-repo-host-0 -- pgbackrest info
+
+--Backup Schedule
+kubectl get cronjobs
+
+kubectl get pods
+
+--Clone
+kubectl apply -k rhino
+
+kubectl get --watch pods
+
+psql -h rhino-primary.postgres-operator -c "select * from test order by 1"
+
+kubectl delete -k rhino
+
+--Clone PITR
+psql -h hippo-primary.postgres-operator -c "select * from test order by 1"
+
+kubectl apply -k rhino
+
+kubectl get pods -w
+
+kubectl logs rhino-pgbackrest-restore-xxxx -f
+
+psql -h rhino-primary.postgres-operator -c "select * from test order by 1"
+
+kubectl delete -k rhino
+
+--Restore
+psql -h hippo-primary.postgres-operator -c "select * from test order by 1"
+
+kubectl apply -k hippo
+
+kubectl annotate postgrescluster hippo --overwrite postgres-operator.crunchydata.com/pgbackrest-restore="$( date '+%F_%H:%M:%S' )"
+
+watch kubectl get pods
+
+psql -h hippo-primary.postgres-operator -c "select * from test order by 1"
+
+--------------------------------------
+Troubleshooting
+--------------------------------------
+kubectl get pod
+
+kubectl describe pod xxxxxxx
+
+kubectl get pvc
+
+kubectl describe pvc xxxxxxx
+
+kubectl logs pgo-b95d7bbd-qpdnd | grep hippo
+
+kubectl logs hippo-instance1-4r87-0 -c database
+
+kubectl stern --selector postgres-operator.crunchydata.com/instance --tail 10
+
+kubectl exec -c database $(kubectl get pod --selector="postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master" -o name) -- env | grep PGDATA
+
+kubectl exec -c database $(kubectl get pod --selector="postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master" -o name) -- tail -10 /pgdata/pg14/log/postgresql-Fri.log
+
+kubectl get node -o yaml
+
+kubectl top node
+
+kubectl top pod
+
+kubectl top pod --containers
+
+--------------------------------------
+PGO Command Line Interface
+--------------------------------------
+kubectl pgo version
+
+sudo cp kubectl-pgo-darwin-amd64 /usr/local/bin/kubectl-pgo
+
+sudo chmod +x /usr/local/bin/kubectl-pgo
+
+kubectl pgo version
+
+kubectl pgo support export hippo --output . --pg-logs-count 2
+
+--------------------------------------
+Postgres Major Version Upgrade
+--------------------------------------
+kubectl apply -k hippo
+
+kubectl annotate --overwrite postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
+
+-- Create pgUpgrade Resource
+kubectl apply -f hippo/hippo-upgrade.yaml
+
+kubectl describe pgupgrade hippo-upgrade
+
+-- Shutdown Postgres/Start Upgrade
+kubectl apply -k hippo
+
+kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/allow-upgrade="hippo-upgrade"
+
+kubectl describe pgupgrade hippo-upgrade
+
+kubectl logs hippo-upgrade-pgdata-xxxxx
+
+-- Restart Postgres
+kubectl apply -k hippo
+
+psql -h hippo-primary.postgres.operator -c "select version()"
+
+-- Post Upgrade Steps
+kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- /usr/pgsql-15/bin/vacuumdb --all --analyze-in-stages
+
+kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- psql -f /pgdata/update_extensions.sql
+
+kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- /pgdata/delete_old_cluster.sh
+
+kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"

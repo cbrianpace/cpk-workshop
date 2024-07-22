@@ -1,0 +1,7 @@
+alter user postgres with login password 'welcome1';
+
+create table employee (empid int, first_name varchar(40), last_name varchar(40), status varchar(10), hiredt date, terminationdt date);
+alter table employee add primary key (empid);
+create table department (deptid int, department varchar(40), glcode varchar(20));
+alter table department add primary key (deptid);
+create table test (chkdate timestamp);

@@ -1,0 +1,90 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: hippo
+spec:
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.6-0
+  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.7-0
+  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-0  
+  postgresVersion: 15
+  shutdown: false
+
+  instances:
+    - name: instance1
+      replicas: 2
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi
+
+  backups:
+    pgbackrest:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.49-0
+      #image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.51-0      
+      # restore:
+      #   enabled: true
+      #   repoName: repo1
+      #   options:
+      #     - --type=time
+      #     - --target="2023-08-02 21:50:13"
+      manual:
+        repoName: repo1
+        options:
+        - --type=full
+      global:
+        log-level-console: info
+        repo1-retention-full-type: time
+        repo1-retention-full: "7"   
+        start-fast: "y"     
+      repos:
+      - name: repo1
+        schedules:
+          full: "0 1 * * 0"
+          incremental: "0 1 * * 1-6"          
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: 1Gi
+
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        parameters:
+          max_parallel_workers: 2
+          max_worker_processes: 2
+          shared_buffers: 256MB
+          work_mem: 4MB
+          archive_timeout: 120
+
+  monitoring:
+    pgmonitor:
+      exporter:
+        image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres-exporter:ubi8-5.6.0-0
+
+  # databaseInitSQL:
+  #   key: init.sql
+  #   name: hippo-init-sql
+
+  # users:
+  #   - name: appuser
+  #     databases:
+  #       - appdev
+  #       - appuat
+
+  # service:
+  #   type: LoadBalancer
+
+  # standby:
+  #   enabled: false
+  #   host: 10.10.10.10
+  #   port: 5432
+
+  # customReplicationTLSSecret:
+  #   name: hippo-repl-tls-custom
+  # customTLSSecret:
+  #   name: hippo-tls-custom

@@ -1,0 +1,15 @@
+namespace: postgres-operator
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- name: hippo-init-sql
+  files:
+   - init.sql
+
+resources:
+- cert.yaml
+- cert-repl.yaml
+- postgres.yaml
+#- pguser-student.yaml
