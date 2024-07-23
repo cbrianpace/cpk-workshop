@@ -11,5 +11,5 @@ configMapGenerator:
 resources:
 - cert.yaml
 - cert-repl.yaml
-- postgres.yaml
+- hippo-pg.yaml
 #- pguser-student.yaml
