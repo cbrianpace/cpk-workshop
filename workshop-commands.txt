@@ -228,16 +228,34 @@ kubectl get pods -o wide
 
 kubectl get nodes
 
--- Cross Cluster Streaming Replication
+-- Standby
 kubectl delete -k hippo
 
 kubectl apply -k hippo
 
-kubectl get services
+kubectl get services -w
+
+kubectl apply -k hippo-dr
+
+kubectl get services -w
 
 psql -h hippo-primary.postgres-operator -c "insert into test (chkdate) values (current_timestamp)"
 
+psql -h hippo--dr-primary.postgres-operator -c "select * from test"
+
+kubectl apply -k hippo
+
+kubectl apply -k hippo-dr
+
+psql -h hippo-dr-primary.postgres-operator -c "insert into test (chkdate) values (current_timestamp)"
+
 psql -h hippo-primary.postgres-operator -c "select * from test"
+
+kubectl delete -k hippo
+
+kubectl delete -k hippo-dr
+
+kubectl apply -k hippo
 
 --------------------------------------
 Backup and Restore

@@ -1,0 +1,9 @@
+namespace: postgres-operator
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- cert.yaml
+- cert-repl.yaml
+- hippo-stdby-pg.yaml

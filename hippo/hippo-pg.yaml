@@ -86,5 +86,5 @@ spec:
   
   # standby:
   #   enabled: false
-  #   host: 10.10.10.10
+  #   host: hippo-dr-primary
   #   port: 5432
