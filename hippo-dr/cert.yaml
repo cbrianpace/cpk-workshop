@@ -4,7 +4,7 @@ metadata:
   name: hippo-dr-certmanager
 spec:
   # Secret names are always required.
-  secretName: hippo-tls-custom
+  secretName: hippo-dr-tls-custom
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   subject:

@@ -6,4 +6,4 @@ generatorOptions:
 resources:
 - cert.yaml
 - cert-repl.yaml
-- hippo-stdby-pg.yaml
+- hippo-dr-pg.yaml

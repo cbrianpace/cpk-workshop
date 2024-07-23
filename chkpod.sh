@@ -15,7 +15,7 @@ do
            if ! [[ -z "$CLUSTERNAME" ]]
            then
                 FINALOUT+="\n"
-                FINALOUT+="Cluster (DCA): $CLUSTERNAME\n"
+                FINALOUT+="Cluster: $CLUSTERNAME\n"
                 CLUSTERNAMEPREV=$CLUSTERNAME
             fi
         fi
@@ -28,7 +28,32 @@ do
         fi
     done <<< "$(echo "$KUBEOUT" | grep -v NAME )"
 
+
+    KUBEOUT=`kubectl get pod -L postgres-operator.crunchydata.com/role -l job-name -L postgres-operator.crunchydata.com/cluster | grep -v "Error" | grep -v "Complete" | grep -v "NAME" | sed 's/\ \  */,/g' | awk -F "," '{print $7"."$1"."$6}' | sort`
+    CLUSTERNAME=""
+    CLUSTERNAMEPREV=""
+    JOBOUT="\nJobs: \n"
+    while IFS=$'\n' read OUTPUT
+    do
+        CLUSTERNAME=`echo $OUTPUT | awk -F "." '{print $1}'`
+        if [ "$CLUSTERNAME" != "$CLUSTERNAMEPREV" ]
+        then
+           if ! [[ -z "$CLUSTERNAME" ]]
+           then
+                JOBOUT+="\n"
+                JOBOUT+="Cluster: $CLUSTERNAME\n"
+                CLUSTERNAMEPREV=$CLUSTERNAME
+            fi
+        fi
+        TEMPJOBOUT=`echo $OUTPUT  | awk -F "." '{print $2}'`
+        JOBOUT+="${TEMPJOBOUT}\n"
+    done <<< "$(echo "$KUBEOUT" | grep -v NAME )"
+
+
     clear
-    echo ${FINALOUT}${NOCLUSTER}
+    echo ${FINALOUT}${NOCLUSTER}${JOBOUT}
+    echo
+    echo
+
     sleep 2
 done
