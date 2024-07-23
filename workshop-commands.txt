@@ -54,7 +54,7 @@ kubectl get pods
 --------------------------------------
 Operator Overview
 --------------------------------------
-kubectl explain postgrescluster.specs.backups
+kubectl explain postgrescluster.spec.backups
 
 --------------------------------------
 Monitoring
@@ -133,6 +133,7 @@ Session 2
 --------------------------------------
 kubectl get postgresclusters --all-namespaces
 
+kubectl ns postgres-operator
 kubectl config set-context --current --namespace=postgres-operator
 
 --------------------------------------
@@ -149,11 +150,13 @@ kubectl apply -k hippo
 
 kubectl get secrets
 
-psql "postgresql://hippo@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require" -c "\du"
+export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.password}} | base64 --decode)
+
+psql "postgresql://appuser@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require" -c "\du"
 
 kubectl apply -k hippo
 
-psql "postgresql://hippo@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require" -c "\l"
+psql "postgresql://appuser@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require" -c "\l"
 
 -- User/Database Management: Change password
 
@@ -181,7 +184,7 @@ kubectl apply –k hippo
 psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
 
 -- Postgres Parameter Modification
-PGSSLMODE=prefer psql -U appuser -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
+psql -U appuser -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
 
 kubectl apply -k hippo
 
