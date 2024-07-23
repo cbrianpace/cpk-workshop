@@ -3,3 +3,7 @@ alter table employee add primary key (empid);
 create table department (deptid int, department varchar(40), glcode varchar(20));
 alter table department add primary key (deptid);
 create table test (chkdate timestamp);
+
+grant all on table employee to public;
+grant all on table department to public;
+grant all on table test to public;
