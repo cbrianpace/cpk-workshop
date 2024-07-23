@@ -66,9 +66,8 @@ spec:
       exporter:
         image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres-exporter:ubi8-5.6.0-0
 
-  # databaseInitSQL:
-  #   key: init.sql
-  #   name: hippo-init-sql
+  # service:
+  #   type: LoadBalancer
 
   # users:
   #   - name: appuser
@@ -76,15 +75,16 @@ spec:
   #       - appdev
   #       - appuat
 
-  # service:
-  #   type: LoadBalancer
-
-  # standby:
-  #   enabled: false
-  #   host: 10.10.10.10
-  #   port: 5432
+  # databaseInitSQL:
+  #   key: init.sql
+  #   name: hippo-init-sql
 
   # customReplicationTLSSecret:
   #   name: hippo-repl-tls-custom
   # customTLSSecret:
   #   name: hippo-tls-custom
+  
+  # standby:
+  #   enabled: false
+  #   host: 10.10.10.10
+  #   port: 5432
