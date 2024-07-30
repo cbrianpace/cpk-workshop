@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: pgadmin-ui
+spec:
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: pgadmin-port
+      protocol: TCP
+      port: 5050
+      targetPort: 5050
+  internalTrafficPolicy: Cluster
+  type: LoadBalancer
+  selector:
+    postgres-operator.crunchydata.com/pgadmin: pgadmin

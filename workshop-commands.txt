@@ -32,7 +32,7 @@ kubectl ns postgres-operator
 --------------------------------------
 Operator Installation
 --------------------------------------
-kubectl apply --server-side -k install/default
+kubectl apply --server-side -k operator/install/default
 
 kubectl get pods
 
@@ -41,7 +41,7 @@ kubectl explain postgrescluster
 --------------------------------------
 Create Cluster
 --------------------------------------
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl get pods
 
@@ -104,7 +104,7 @@ kubectl get configmaps
 
 kubectl get pv
 
-kubectl delete -k hippo
+kubectl delete -k hippo/prod
 
 kubectl get pods
 
@@ -112,7 +112,7 @@ kubectl get statefulsets
 
 kubectl get postgrescluster --all-namespaces
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 --------------------------------------
 Connecting to Postgres Cluster
@@ -123,7 +123,7 @@ export PGPASSWORD=$(kubectl get secret hippo-pguser-hippo --template={{.data.pas
 
 psql "postgresql://hippo@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require"
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl get services -w
 
@@ -143,14 +143,14 @@ kubectl config set-context --current --namespace=postgres-operator
 --------------------------------------
 Modify Postgres Cluster
 --------------------------------------
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl get pods
 
 kubectl get pod -L postgres-operator.crunchydata.com/role -l postgres-operator.crunchydata.com/instance
 
 -- User/Database Management
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl get secrets
 
@@ -158,7 +158,7 @@ export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.p
 
 psql "postgresql://appuser@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require" -c "\du"
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 psql "postgresql://appuser@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require" -c "\l"
 
@@ -183,14 +183,14 @@ export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.p
 
 psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
 
-kubectl apply –k hippo
+kubectl apply –k hippo/prod
 
 psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
 
 -- Postgres Parameter Modification
 psql -U appuser -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 psql -U appuser -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
 
@@ -199,7 +199,7 @@ kubectl patch postgrescluster/hippo -n postgres-operator --type merge --patch '{
 psql -U appuser -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
 
 -- Database initialization Script
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl describe postgrescluster hippo
 
@@ -231,13 +231,13 @@ kubectl get pods -o wide
 kubectl get nodes
 
 -- Standby
-kubectl delete -k hippo
+kubectl delete -k hippo/prod
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl get services -w
 
-kubectl apply -k hippo-dr
+kubectl apply -k hippo/standby
 
 kubectl get services -w
 
@@ -251,26 +251,26 @@ psql -U appuser -h hippo-dr-primary.postgres-operator -c "select pg_is_in_recove
 
 psql -U appuser -h hippo-dr-primary.postgres-operator -c "select * from test"
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
-kubectl apply -k hippo-dr
+kubectl apply -k hippo/standby
 
 psql -U appuser -h hippo-dr-primary.postgres-operator -c "insert into test (chkdate) values (current_timestamp)"
 
 psql -U appuser -h hippo-primary.postgres-operator -c "select * from test"
 
-kubectl delete -k hippo
+kubectl delete -k hippo/prod
 
-kubectl delete -k hippo-dr
+kubectl delete -k hippo/standby
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 --------------------------------------
 Backup and Restore
 --------------------------------------
 --pgBackRest Global Configuration
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl scale statefulset hippo-repo-host --replicas=0
 
@@ -281,7 +281,7 @@ kubectl exec -it -c database $(kubectl get pod -l postgres-operator.crunchydata.
 while(true); do psql -c "insert into test (chkdate) values (current_timestamp)"; sleep 60; done
 
 --Manual Full Backup
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
 
@@ -291,7 +291,7 @@ kubectl get pods
 kubectl exec hippo-repo-host-0 -- pgbackrest info
 kubectl pgo show backup hippo
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl annotate postgrescluster hippo --overwrite postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
 
@@ -306,33 +306,33 @@ kubectl get cronjobs
 kubectl get pods
 
 --Clone
-kubectl apply -k rhino
+kubectl apply -k hippo/dev
 
 kubectl get --watch pods
 
 export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.password}} | base64 --decode)
 
-psql -U appuser -h rhino-primary.postgres-operator -c "select * from test order by 1"
+psql -U appuser -h hippo-dev-primary.postgres-operator -c "select * from test order by 1"
 
-kubectl delete -k rhino
+kubectl delete -k hippo/dev
 
 --Clone PITR
 psql -U appuser -h hippo-primary.postgres-operator -c "select * from test order by 1"
 
-kubectl apply -k rhino
+kubectl apply -k hippo/dev
 
 kubectl get pods -w
 
-kubectl logs rhino-pgbackrest-restore-xxxx -f
+kubectl logs hippo-dev-pgbackrest-restore-xxxx -f
 
-psql -U appuser -h rhino-primary.postgres-operator -c "select * from test order by 1"
+psql -U appuser -h hippo-dev-primary.postgres-operator -c "select * from test order by 1"
 
-kubectl delete -k rhino
+kubectl delete -k hippo/dev
 
 --Restore
 psql -U appuser -h hippo-primary.postgres-operator -c "select * from test order by 1"
 
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl annotate postgrescluster hippo --overwrite postgres-operator.crunchydata.com/pgbackrest-restore="$( date '+%F_%H:%M:%S' )"
 
@@ -385,7 +385,7 @@ kubectl pgo support export hippo --output . --pg-logs-count 2
 --------------------------------------
 Postgres Major Version Upgrade
 --------------------------------------
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl annotate --overwrite postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
 
@@ -395,7 +395,7 @@ kubectl apply -f hippo/hippo-upgrade.yaml
 kubectl describe pgupgrade hippo-upgrade
 
 -- Shutdown Postgres/Start Upgrade
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
 kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/allow-upgrade="hippo-upgrade"
 
@@ -404,9 +404,9 @@ kubectl describe pgupgrade hippo-upgrade
 kubectl logs hippo-upgrade-pgdata-xxxxx
 
 -- Restart Postgres
-kubectl apply -k hippo
+kubectl apply -k hippo/prod
 
-psql -U appuser -h hippo-primary.postgres.operator -c "select version()"
+psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
 
 -- Post Upgrade Steps
 kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- /usr/pgsql-15/bin/vacuumdb --all --analyze-in-stages

@@ -8,7 +8,7 @@ spec:
   shutdown: false
 
   instances:
-    - name: instance1
+    - name: pga
       replicas: 2
       dataVolumeClaimSpec:
         accessModes:

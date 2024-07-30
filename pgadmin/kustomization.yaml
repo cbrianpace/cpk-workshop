@@ -1,0 +1,9 @@
+namespace: postgres-operator
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- pgadmin-secret.yaml
+- pgadmin-service.yaml
+- pgadmin.yaml

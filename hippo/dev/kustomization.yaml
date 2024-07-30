@@ -1,4 +1,4 @@
 namespace: postgres-operator
 
 resources:
-- rhino-pg.yaml
+- hippo-dev-pg.yaml
