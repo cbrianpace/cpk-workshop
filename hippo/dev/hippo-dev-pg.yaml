@@ -1,7 +1,7 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
-  name: rhino
+  name: hippo-dev
 spec:
   image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.7-0
   postgresVersion: 15
@@ -15,14 +15,14 @@ spec:
       #   - --target="2023-08-02 21:50:13"
 
   instances:
-    - name: instance1
+    - name: pga
       replicas: 2
       dataVolumeClaimSpec:
         accessModes:
         - "ReadWriteOnce"
         resources:
           requests:
-            storage: 1Gi
+            storage: 10Gi
 
   backups:
     pgbackrest:
@@ -35,7 +35,7 @@ spec:
             - "ReadWriteOnce"
             resources:
               requests:
-                storage: 1Gi
+                storage: 10Gi
 
   monitoring:
     pgmonitor:

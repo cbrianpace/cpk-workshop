@@ -1,0 +1,1 @@
+kubectl exec -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master,postgres-operator.crunchydata.com/cluster=${1:-'hippo'} -o name) -c database -- bash

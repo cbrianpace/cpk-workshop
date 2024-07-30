@@ -1,0 +1,1 @@
+kubectl exec -it -c database $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- bash -c 'while(true); do psql -c "insert into test (chkdate) values (current_timestamp)"; sleep 60; done'

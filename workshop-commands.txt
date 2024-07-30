@@ -69,6 +69,8 @@ kubectl patch service crunchy-grafana -n pgmonitor -p '{"spec":{"type": "LoadBal
 
 kubectl get services -n pgmonitor -w
 
+./pgbench.sh
+
 kubectl exec -it -c database $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- bash
 
 pgbench --initialize --scale=10 postgres
@@ -99,6 +101,8 @@ kubectl get secrets
 kubectl get secret hippo-pguser-hippo -o yaml
 
 export PGPASSWORD=$(kubectl get secret hippo-pguser-hippo --template={{.data.password}} | base64 --decode)
+
+echo $PGPASSWORD
 
 kubectl get configmaps
 
@@ -183,7 +187,7 @@ export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.p
 
 psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
 
-kubectl apply –k hippo/prod
+kubectl apply -k hippo/prod
 
 psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
 
@@ -253,7 +257,11 @@ psql -U appuser -h hippo-dr-primary.postgres-operator -c "select * from test"
 
 kubectl apply -k hippo/prod
 
+psql -U appuser -h hippo-primary.postgres-operator -c "select pg_is_in_recovery()"
+
 kubectl apply -k hippo/standby
+
+psql -U appuser -h hippo-dr-primary.postgres-operator -c "select pg_is_in_recovery()"
 
 psql -U appuser -h hippo-dr-primary.postgres-operator -c "insert into test (chkdate) values (current_timestamp)"
 
@@ -272,9 +280,11 @@ Backup and Restore
 
 kubectl apply -k hippo/prod
 
-kubectl scale statefulset hippo-repo-host --replicas=0
+kubectl exec -it hippo-repo-host-0 -- grep retention /etc/pgbackrest/conf.d/pgbackrest_repo.conf
 
 --Backup Demonstration Setup
+
+./insert-loop.sh
 
 kubectl exec -it -c database $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- bash
 
@@ -390,7 +400,7 @@ kubectl apply -k hippo/prod
 kubectl annotate --overwrite postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
 
 -- Create pgUpgrade Resource
-kubectl apply -f hippo/hippo-upgrade.yaml
+kubectl apply -f hippo/prod/hippo-upgrade.yaml
 
 kubectl describe pgupgrade hippo-upgrade
 
@@ -409,10 +419,10 @@ kubectl apply -k hippo/prod
 psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
 
 -- Post Upgrade Steps
-kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- /usr/pgsql-15/bin/vacuumdb --all --analyze-in-stages
+kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- /usr/pgsql-16/bin/vacuumdb --all --analyze-in-stages
 
 kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- psql -f /pgdata/update_extensions.sql
 
 kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- /pgdata/delete_old_cluster.sh
 
-kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
+kubectl annotate postgrescluster hippo --overwrite postgres-operator.crunchydata.com/pgbackrest-backup="$( date '+%F_%H:%M:%S' )"
