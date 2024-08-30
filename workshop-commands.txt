@@ -369,7 +369,7 @@ kubectl stern --selector postgres-operator.crunchydata.com/instance --tail 10
 
 kubectl exec -c database $(kubectl get pod --selector="postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master" -o name) -- env | grep PGDATA
 
-kubectl exec -c database $(kubectl get pod --selector="postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master" -o name) -- tail -10 /pgdata/pg14/log/postgresql-Fri.log
+kubectl exec -c database $(kubectl get pod --selector="postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master" -o name) -- tail -10f /pgdata/pg14/log/postgresql-Fri.log
 
 kubectl get node -o yaml
 
