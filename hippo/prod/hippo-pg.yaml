@@ -66,8 +66,7 @@ spec:
 
   monitoring:
     pgmonitor:
-      exporter:
-        image: {}
+      exporter: {}
 
   # service:
   #   type: LoadBalancer

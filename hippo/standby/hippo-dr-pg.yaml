@@ -51,8 +51,7 @@ spec:
 
   monitoring:
     pgmonitor:
-      exporter:
-        image: {}
+      exporter: {}
 
   customReplicationTLSSecret:
     name: hippo-dr-repl-tls-custom

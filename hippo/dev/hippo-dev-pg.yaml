@@ -27,8 +27,7 @@ spec:
 
   monitoring:
     pgmonitor:
-      exporter:
-        image: {}
+      exporter: {}
 
   patroni:
     dynamicConfiguration:
