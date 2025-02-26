@@ -225,8 +225,8 @@ kubectl exec -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=mas
 
 cd /pgdata
 
-ls pg15
-rm -rf pg15*
+ls pg16
+rm -rf pg16*
 ls
 
 -- Pod Scheduling
