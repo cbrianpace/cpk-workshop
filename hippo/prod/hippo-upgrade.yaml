@@ -3,8 +3,8 @@ kind: PGUpgrade
 metadata: 
   name: hippo-upgrade 
 spec: 
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-upgrade:ubi8-5.6.0-0 
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-upgrade:ubi8-5.7.3-0 
   postgresClusterName: hippo 
-  fromPostgresVersion: 15
-  toPostgresVersion: 16
-  toPostgresImage: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.3-0
+  fromPostgresVersion: 16
+  toPostgresVersion: 17
+  toPostgresImage: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-17.2-2

@@ -1,25 +1,23 @@
+kind: Kustomization
+
 namespace: postgres-operator
 
-commonLabels:
-  app.kubernetes.io/name: pgo
-  app.kubernetes.io/version: 5.6.0
-  postgres-operator.crunchydata.com/control-plane: postgres-operator
+labels:
+- includeSelectors: false
+  includeTemplates: true
+  pairs:
+    app.kubernetes.io/name: pgo
+    app.kubernetes.io/version: 5.7.3
+- includeSelectors: true
+  includeTemplates: true
+  pairs:
+    postgres-operator.crunchydata.com/control-plane: postgres-operator
 
-bases:
+resources:
 - ../crd
 - ../rbac/namespace
 - ../manager
-# Uncomment the following to deploy CPK with STIG assessment
-# - ../cpk/singlenamespace
 
-images:
-- name: postgres-operator
-  newName: registry.developers.crunchydata.com/crunchydata/postgres-operator
-  newTag: ubi8-5.6.0-0
-
-patchesJson6902:
-- target: { group: apps, version: v1, kind: Deployment, name: pgo }
-  path: selectors.yaml
-
-patchesStrategicMerge:
-- manager-target.yaml
+components:
+- ../components/images-by-tag
+- ../components/single-namespace

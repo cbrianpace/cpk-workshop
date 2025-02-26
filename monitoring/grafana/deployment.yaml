@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: grafana
-        image: grafana/grafana:9.2.20
+        image: grafana/grafana:11.1.5
         ports:
         - containerPort: 3000
         env:
@@ -42,9 +42,9 @@ spec:
         - mountPath: /etc/grafana/provisioning/dashboards
           name: grafana-dashboards
       securityContext:
-        fsGroup: 26
-        supplementalGroups:
-        - 65534
+        # fsGroup: 26
+        # supplementalGroups:
+        # - 65534
       serviceAccountName: grafana
       volumes:
       - name: grafanadata

@@ -1,22 +1,37 @@
+kind: Kustomization
+
 namespace: postgres-operator
 
-commonLabels:
-  app.kubernetes.io/name: pgo
-  app.kubernetes.io/version: 5.6.0
-  postgres-operator.crunchydata.com/control-plane: postgres-operator
+labels:
+- includeSelectors: false
+  includeTemplates: true
+  pairs:
+    app.kubernetes.io/name: pgo
+    app.kubernetes.io/version: 5.7.3
+- includeSelectors: true
+  includeTemplates: true
+  pairs:
+    postgres-operator.crunchydata.com/control-plane: postgres-operator
 
-bases:
+resources:
 - ../crd
 - ../rbac/cluster
 - ../manager
-# Uncomment the following to deploy CPK with STIG assessment
-# - ../cpk/default
 
-images:
-- name: postgres-operator
-  newName: registry.developers.crunchydata.com/crunchydata/postgres-operator
-  newTag: ubi8-5.6.0-0
+components:
+- ../components/images-by-tag
 
-patchesJson6902:
-- target: { group: apps, version: v1, kind: Deployment, name: pgo }
-  path: selectors.yaml
+patches:
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: pgo
+    spec:
+      template:
+        spec:
+          containers:
+          - name: operator
+            env:
+            - name: PGO_FEATURE_GATES
+              value: ""

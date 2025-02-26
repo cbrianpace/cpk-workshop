@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: prometheus
-        image: prom/prometheus:v2.39.2
+        image: prom/prometheus:v2.54.1
         ports:
         - containerPort: 9090
         livenessProbe:
@@ -29,9 +29,9 @@ spec:
         - mountPath: /etc/prometheus/alert-rules.d
           name: alertmanagerrules
       securityContext:
-        fsGroup: 26
-        supplementalGroups:
-        - 65534
+        # fsGroup: 26
+        # supplementalGroups:
+        # - 65534
       serviceAccountName: prometheus
       volumes:
       - name: prometheusconf

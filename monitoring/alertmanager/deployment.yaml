@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: alertmanager
-        image: prom/alertmanager:v0.24.0
+        image: prom/alertmanager:v0.27.0
         args:
         - --config.file=/etc/alertmanager/alertmanager.yml
         - --storage.path=/alertmanager
@@ -32,7 +32,7 @@ spec:
         - mountPath: /alertmanager
           name: alertmanagerdata
       securityContext:
-        #fsGroup: 26
+        # fsGroup: 26
         # supplementalGroups:
         # - 65534
       serviceAccountName: alertmanager
