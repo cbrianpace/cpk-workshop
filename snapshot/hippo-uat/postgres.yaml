@@ -1,0 +1,57 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: hippo-uat
+spec:
+#----------------------------------------------
+# Clone 
+#----------------------------------------------
+  dataSource:
+    volumes:
+      pgDataVolume:
+        pvcName: hippouat-replica-snapshot-restore
+
+  #----------------------------------------------
+  # General Postgres Info
+  #----------------------------------------------
+  image:           registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.4-2
+  port:            5432
+  postgresVersion: 16
+  instances:
+    - name:     'pgc'
+      replicas: 1
+      dataVolumeClaimSpec:
+        accessModes:
+          - "ReadWriteOnce"
+        storageClassName: standard-rwo
+        # volumeName: hippouat-replica-snapshot-restore
+        # dataSource:
+        #   name: hippo-deltarestore-snapshot-202503311554
+        #   kind: VolumeSnapshot
+        #   apiGroup: snapshot.storage.k8s.io
+        resources: 
+          requests:
+            storage: 10Gi
+        
+
+  #----------------------------------------------
+  # Postgres Configuration
+  #----------------------------------------------
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        parameters:
+          archive_timeout:          30
+          cron.database_name:       'postgres'
+          cron.host:                '/tmp/postgres'
+          shared_buffers:           512MB
+          shared_preload_libraries: 'pg_cron'
+          work_mem:                 10MB
+
+
+  #----------------------------------------------
+  # Monitoring
+  #----------------------------------------------
+  monitoring:
+    pgmonitor:
+      exporter: {}

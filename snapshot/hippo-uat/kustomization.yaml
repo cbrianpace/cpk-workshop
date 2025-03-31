@@ -1,0 +1,8 @@
+namespace: postgres-operator
+
+generatorOptions:
+  disableNameSuffixHash: true
+    
+resources:
+- snapshot-restore.yaml
+- postgres.yaml

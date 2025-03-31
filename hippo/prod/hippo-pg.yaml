@@ -34,6 +34,7 @@ spec:
         options:
         - --type=full
       global:
+        archive-copy: "y"
         log-level-console: info
         repo1-retention-full-type: time
         repo1-retention-full: "7"   
@@ -68,8 +69,8 @@ spec:
     pgmonitor:
       exporter: {}
 
-  # service:
-  #   type: LoadBalancer
+  service:
+    type: NodePort
 
   # users:
   #   - name: appuser

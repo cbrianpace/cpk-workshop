@@ -1,0 +1,120 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: hippo-pgbackrest-delta-snapshot
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        job-name: hippo-pgbackrest-delta-snapshot
+    spec:
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: pgbackrest
+          command: ["/tmp/script/pgbackrest-delta-snapshot.sh"]
+          #command: ["tail","-f","/dev/null"]
+          env:
+            - name: PGHOST
+              value: /tmp
+            - name: DELTA_PVC
+              value: "hippo-deltarestore"
+            - name: POSTGRESQL_VERSION
+              value: "16"
+            - name: VOLUME_SNAPSHOT_CLASS
+              value: "gke-snapshot-class"
+            - name: DELTA_NAMESPACE
+              valueFrom:
+                fieldRef:
+                   fieldPath: metadata.namespace
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp              
+            - name: pgbackrest-script
+              mountPath: /tmp/script
+            - name: pgdata
+              mountPath: /pgdata
+            - mountPath: /etc/pgbackrest/conf.d
+              name: pgbackrest-config
+              readOnly: true
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: kube-api-access
+              readOnly: true
+          terminationMessagePolicy: File
+          image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.4-2
+      dnsPolicy: ClusterFirst
+      automountServiceAccountToken: true
+      restartPolicy: Never
+      serviceAccount: pgo-snapshot
+      serviceAccountName: pgo-snapshot
+      terminationGracePeriodSeconds: 30
+      securityContext: 
+        fsGroup: 26
+        fsGroupChangePolicy: OnRootMismatch
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: pgbackrest-script
+          projected:
+            sources:
+              - configMap:
+                  name: pgbackrest-delta-script
+                  items:
+                    - key: pgbackrest-delta-snapshot.sh
+                      path: pgbackrest-delta-snapshot.sh
+            defaultMode: 0777
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: hippo-deltarestore
+        - name: pgbackrest-config
+          projected:
+            defaultMode: 420
+            sources:
+            - configMap:
+                items:
+                - key: pgbackrest_instance.conf
+                  path: pgbackrest_instance.conf
+                name: hippo-pgbackrest-config
+            - secret:
+                items:
+                - key: pgbackrest.ca-roots
+                  path: ~postgres-operator/tls-ca.crt
+                - key: pgbackrest-client.crt
+                  path: ~postgres-operator/client-tls.crt
+                - key: pgbackrest-client.key
+                  mode: 384
+                  path: ~postgres-operator/client-tls.key
+                name: hippo-pgbackrest
+        - name: kube-api-access
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                expirationSeconds: 3607
+                path: token
+            - configMap:
+                items:
+                - key: ca.crt
+                  path: ca.crt
+                name: kube-root-ca.crt
+            - downwardAPI:
+                items:
+                - fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+                  path: namespace

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hippouat-replica-snapshot-restore
+spec:
+  dataSource:
+    name: hippo-deltarestore-snapshot-202503311554
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  storageClassName: standard-rwo
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

@@ -1,0 +1,15 @@
+namespace: postgres-operator
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: pgbackrest-delta-script
+    files:
+      - pgbackrest-delta-snapshot.sh
+
+resources:
+- service-account/role.yaml
+- service-account/service_account.yaml
+- service-account/role_binding.yaml
+- pgbackrest-job.yaml
