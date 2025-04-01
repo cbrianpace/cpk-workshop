@@ -32,7 +32,7 @@ spec:
         - mountPath: /alertmanager
           name: alertmanagerdata
       securityContext:
-        # fsGroup: 26
+        fsGroup: 26
         # supplementalGroups:
         # - 65534
       serviceAccountName: alertmanager

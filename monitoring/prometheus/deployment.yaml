@@ -29,7 +29,7 @@ spec:
         - mountPath: /etc/prometheus/alert-rules.d
           name: alertmanagerrules
       securityContext:
-        # fsGroup: 26
+        fsGroup: 26
         # supplementalGroups:
         # - 65534
       serviceAccountName: prometheus

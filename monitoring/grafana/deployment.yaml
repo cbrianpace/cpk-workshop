@@ -42,7 +42,7 @@ spec:
         - mountPath: /etc/grafana/provisioning/dashboards
           name: grafana-dashboards
       securityContext:
-        # fsGroup: 26
+        fsGroup: 26
         # supplementalGroups:
         # - 65534
       serviceAccountName: grafana
