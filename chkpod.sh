@@ -19,7 +19,9 @@ do
                 CLUSTERNAMEPREV=$CLUSTERNAME
             fi
         fi
-        TEMPOUT=`echo $OUTPUT  | awk -F "." '{if ($3=="master") {print $2 "  🟩   leader    "} else if ($3=="replica") {print $2 "  🟦    ...  replica    "} else {print $2 "  🟥   down    "}}'`
+
+        TEMPOUT=`echo $OUTPUT  | awk -F "." '{if ($3=="master") {print $2 "  🟩   leader    "} else if ($3=="primary") {print $2 "  🟩   standby leader"} else if ($3=="replica") {print $2 "  🟦    ...  replica    "} else {print $2 "  🟥   down    "}}'`
+
         if [[ -z "$CLUSTERNAME" ]]
         then
             NOCLUSTER+="${TEMPOUT}\n"

@@ -419,7 +419,7 @@ kubectl apply -k hippo/prod
 psql -U appuser -h hippo-primary.postgres-operator -c "select version()"
 
 -- Post Upgrade Steps
-kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- /usr/pgsql-16/bin/vacuumdb --all --analyze-in-stages
+kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- /usr/pgsql-17/bin/vacuumdb --all --analyze-in-stages
 
 kubectl exec -c database -it $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -- psql -f /pgdata/update_extensions.sql
 
