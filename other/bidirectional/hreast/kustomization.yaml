@@ -1,0 +1,23 @@
+namespace: crunchy
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- name: hreast-init-sql
+  files:
+   - init.sql
+   - sql/s01_east_publication.sql
+   - sql/s02_east_subscription.sql
+   - sql/s03_heartbeat.sql
+   - sql/s04_monitor_heartbeat.sql
+   - sql/t01_select.sql
+   - sql/t02_east_update.sql
+   - sql/t03_east_conflict.sql
+   - sql/t04_checkdata.sql
+   - sql/t05_trigger.sql
+   - sql/t06_east_conflict2.sql
+   - sql/t07_check_status.sql
+
+resources:
+- postgres.yaml

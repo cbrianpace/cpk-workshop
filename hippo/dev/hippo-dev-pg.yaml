@@ -24,6 +24,18 @@ spec:
           requests:
             storage: 10Gi
 
+  backups:
+    pgbackrest:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.54.1-0      
+      repos:
+      - name: repo1
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: 20Gi
 
   monitoring:
     pgmonitor:

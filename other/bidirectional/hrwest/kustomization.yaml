@@ -1,0 +1,23 @@
+namespace: crunchy
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- name: hrwest-init-sql
+  files:
+   - init.sql
+   - sql/s01_west_publication.sql
+   - sql/s02_west_subscription.sql
+   - sql/s03_heartbeat.sql
+   - sql/s04_monitor_heartbeat.sql
+   - sql/t01_select.sql
+   - sql/t02_west_update.sql
+   - sql/t03_west_conflict.sql
+   - sql/t04_checkdata.sql
+   - sql/t05_trigger.sql
+   - sql/t06_west_conflict2.sql
+   - sql/t07_check_status.sql
+
+resources:
+- postgres.yaml

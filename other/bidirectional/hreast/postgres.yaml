@@ -1,0 +1,68 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: hreast
+spec:
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-17.2-2  
+  postgresVersion: 17
+  shutdown: false
+
+  instances:
+    - name: pge
+      replicas: 1
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 10Gi
+
+  config:
+    files:
+      - configMap: 
+          name: hreast-init-sql
+
+  backups:
+    pgbackrest:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.54.1-0      
+      global:
+        archive-copy: "y"
+        log-level-console: info
+        repo1-retention-full-type: time
+        repo1-retention-full: "7"   
+        start-fast: "y"     
+      repos:
+      - name: repo1
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            resources:
+              requests:
+                storage: 20Gi
+
+  patroni:
+    dynamicConfiguration:
+      failsafe_mode: true
+      postgresql:
+        parameters:
+          archive_timeout: 120
+          wal_level: logical
+          log_line_prefix: '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+          logical_decoding_work_mem: '256MB'
+          max_sync_workers_per_subscription: 4
+          max_parallel_apply_workers_per_subscription: 4
+          max_worker_processes: 16
+          wal_sender_timeout: '10min'
+          wal_receiver_timeout: '10min'
+          timezone: 'EST'
+          shared_buffers: 512MB
+          work_mem: 8MB
+
+  monitoring:
+    pgmonitor:
+      exporter: {}
+
+  databaseInitSQL:
+    key: init.sql
+    name: hreast-init-sql
