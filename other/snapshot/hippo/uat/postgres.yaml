@@ -14,7 +14,7 @@ spec:
   #----------------------------------------------
   # General Postgres Info
   #----------------------------------------------
-  image:           registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.4-2
+  image:           registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.6-2
   port:            5432
   postgresVersion: 16
   instances:

@@ -1,0 +1,12 @@
+namespace: postgres-operator
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- name: hippo-init-sql
+  files:
+   - init.sql
+
+resources:
+- hippo-pg.yaml

@@ -1,0 +1,51 @@
+# Backup/Recovery Workshop Commands
+
+## Environment Setup
+
+kubectl get nodes
+kubectl create namespace postgres-operator
+kubectl ns postgres-operator
+
+kubectl apply --server-side -k operator/install/default
+
+kubectl get pods
+
+## Backup/Recovery
+
+### Create Postgres Cluster
+
+kubectl apply -k hippo/prod
+
+./chkpod.sh
+
+### Insert Loop
+
+./insert.sh
+
+### Manual Backup
+
+kubectl apply -k hippo/prod
+
+kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$(date '+%F_%H:%M:%S')"
+
+kubectl get pods
+
+kubectl exec hippo-repo-host-0 -- pgbackrest info
+
+kubectl pgo show backup hippo
+
+kubectl pgo backup hippo --options="--type=incr" --force-conflicts
+
+kubectl exec hippo-repo-host-0 -- pgbackrest info
+
+kubectl pgo show backup hippo
+
+### Backup Schedule
+
+kubectl get cronjobs
+
+kubectl get pods
+
+### Clone
+
+kubectl apply -k hippo/dev
