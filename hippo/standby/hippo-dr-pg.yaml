@@ -51,12 +51,12 @@ spec:
     pgmonitor:
       exporter: {}
 
-  # customReplicationTLSSecret:
-  #   name: hippo-dr-repl-tls-custom
-  # customTLSSecret:
-  #   name: hippo-dr-tls-custom
+  customReplicationTLSSecret:
+    name: hippo-dr-repl-tls-custom
+  customTLSSecret:
+    name: hippo-dr-tls-custom
   
   standby:
-    enabled: false
+    enabled: true
     host: hippo-primary
     port: 5432
