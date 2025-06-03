@@ -3,9 +3,18 @@ kind: PostgresCluster
 metadata:
   name: hippo-dev
 spec:
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.6-2
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.8-2516
   postgresVersion: 16
   shutdown: false
+
+  config:
+    parameters:
+      max_parallel_workers: 2
+      max_worker_processes: 2
+      shared_buffers: 256MB
+      work_mem: 4MB
+      archive_timeout: 300
+
   dataSource:
     postgresCluster:
       clusterName: hippo
@@ -26,7 +35,7 @@ spec:
 
   backups:
     pgbackrest:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.54.1-0      
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi9-2.54.2-2516      
       repos:
       - name: repo1
         volume:
@@ -40,13 +49,3 @@ spec:
   monitoring:
     pgmonitor:
       exporter: {}
-
-  patroni:
-    dynamicConfiguration:
-      postgresql:
-        parameters:
-          max_parallel_workers: 2
-          max_worker_processes: 2
-          shared_buffers: 256MB
-          work_mem: 4MB
-          archive_timeout: 300
