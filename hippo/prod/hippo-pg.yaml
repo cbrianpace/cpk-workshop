@@ -3,11 +3,19 @@ kind: PostgresCluster
 metadata:
   name: hippo
 spec:
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.4-2
-  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.6-2
-  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-17.2-2  
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.8-2516
+  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.9-2520
+  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.5-2520  
   postgresVersion: 16
   shutdown: false
+
+  config:
+    parameters:
+      max_parallel_workers: 2
+      max_worker_processes: 2
+      shared_buffers: 256MB
+      work_mem: 4MB
+      archive_timeout: 120
 
   instances:
     - name: pga
@@ -21,8 +29,8 @@ spec:
 
   backups:
     pgbackrest:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.53.1-0
-      #image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.54.1-0      
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi9-2.54.2-2516
+      #image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi9-2.54.2-2520      
       # restore:
       #   enabled: true
       #   repoName: repo1
@@ -56,14 +64,7 @@ spec:
   patroni:
     dynamicConfiguration:
       failsafe_mode: true
-      #synchronous_mode: true
-      postgresql:
-        parameters:
-          max_parallel_workers: 2
-          max_worker_processes: 2
-          shared_buffers: 256MB
-          work_mem: 4MB
-          archive_timeout: 120
+      # synchronous_mode: true
 
   monitoring:
     pgmonitor:
