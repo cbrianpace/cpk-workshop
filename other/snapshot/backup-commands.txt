@@ -14,7 +14,7 @@ kubectl get pods
 
 ### Create Postgres Cluster
 
-kubectl apply -k hippo/prod
+kubectl apply -k other/snapshot/hippo/prod
 
 ./chkpod.sh
 
@@ -24,7 +24,7 @@ kubectl apply -k hippo/prod
 
 ### Manual Backup
 
-kubectl apply -k hippo/prod
+kubectl apply -k other/snapshot/hippo/prod
 
 kubectl annotate postgrescluster hippo postgres-operator.crunchydata.com/pgbackrest-backup="$(date '+%F_%H:%M:%S')"
 
@@ -48,4 +48,46 @@ kubectl get pods
 
 ### Clone
 
-kubectl apply -k hippo/dev
+kubectl apply -k other/snapshot/hippo/dev
+
+kubectl get --watch pods
+
+export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.password}} | base64 --decode)
+
+psql -U appuser -h hippo-dev-primary.postgres-operator -c "select * from test order by 1"
+
+kubectl delete -k other/snapshot/hippo/dev
+
+### Clone PITR
+
+kubectl apply -k other/snapshot/hippo/dev
+
+kubectl get pods
+
+kubectl logs hippo-dev-pgbackrest-restore-xxxx
+
+psql -U appuser -h hippo-dev-primary.postgres-operator -c "select * from test order by 1"
+
+kubectl delete -k other/snapshot/hippo/dev
+
+### Restore (In Place)
+
+kubectl apply -k other/snapshot/hippo/prod
+
+kubectl annotate postgrescluster hippo --overwrite postgres-operator.crunchydata.com/pgbackrest-restore="$( date '+%F_%H:%M:%S' )"
+
+psql -U appuser -h hippo-primary.postgres-operator -c "select * from test order by 1"
+
+## Snapshots
+
+## Snapshot Setup
+
+kubectl apply -f other/snapshot/deltarestore-pvc.yaml -n postgres-operator
+
+kubectl apply -k other/snapshot/pgbackrest-snapshot-job
+
+kubectl get volumesnapshot -n postgres-operator
+
+kubectl apply -k other/snapshot/hippo/uat
+
+psql -U appuser -h hippo-uat-primary.postgres-operator -c "select * from test order by 1"

@@ -55,7 +55,7 @@ spec:
               name: kube-api-access
               readOnly: true
           terminationMessagePolicy: File
-          image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.4-2
+          image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-16.6-2
       dnsPolicy: ClusterFirst
       automountServiceAccountToken: true
       restartPolicy: Never
