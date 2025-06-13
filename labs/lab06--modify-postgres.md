@@ -67,46 +67,6 @@ Note:  Pay attention to the order in which the pods are restarted.
 kubectl patch postgrescluster hippo --type merge --patch '{"spec":{"shutdown": false}}'
 ```
 
-## Postgres parameters
-
-Check the current settings for `work_mem` and `shared_buffers`.
-
-```shell
-psql -U appuser -d postgres -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
-```
-
-Now, edit the `hippo/prod/hippo-pg.yaml` file and increase the settings for shared_buffers and work_mem.  These can be found under 
-the `spec.config.parameters` section.
-
-```text
-spec:
-  config:
-    parameters:
-      shared_buffers: 512MB
-      work_mem: 8MB          
-```
-
-With the changes made, apply the updated manifest.
-
-```shell
-kubectl apply -k hippo/prod
-```
-
-Check the parameter settings after the change.
-
-```shell
-psql -U appuser -d postgres -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
-```
-
-### Trigger a Postgres cluster rolling restart
-
-Sometimes, parameters require the database to be restarted or there may be times that you want to perform a restart. 
-The following command can be used to have the Operator perform a rolling restart of the Postgres cluster.
-
-```shell
-kubectl patch postgrescluster/hippo -n postgres-operator --type merge --patch '{"spec":{"metadata":{"annotations":{"restarted":"'"$(date)"'"}}}}'
-```
-
 ## User and Database Management
 
 ### Add Users and Databases
@@ -165,6 +125,48 @@ export PGPASSWORD=$(kubectl get secret hippo-pguser-appuser --template={{.data.p
 psql  "user=appuser sslmode=prefer host=hippo-primary.postgres-operator dbname=appdev"
 ```
 
+Type `exit` to exit psql.
+
+## Postgres parameters
+
+Check the current settings for `work_mem` and `shared_buffers`.
+
+```shell
+psql -U appuser -d postgres -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
+```
+
+Now, edit the `hippo/prod/hippo-pg.yaml` file and increase the settings for shared_buffers and work_mem.  These can be found under 
+the `spec.config.parameters` section.
+
+```text
+spec:
+  config:
+    parameters:
+      shared_buffers: 512MB
+      work_mem: 8MB          
+```
+
+With the changes made, apply the updated manifest.
+
+```shell
+kubectl apply -k hippo/prod
+```
+
+Check the parameter settings after the change.
+
+```shell
+psql -U appuser -d postgres -h hippo-primary.postgres-operator  -c "select name, setting from pg_settings where name in ('work_mem','shared_buffers')"
+```
+
+### Trigger a Postgres cluster rolling restart
+
+Sometimes, parameters require the database to be restarted or there may be times that you want to perform a restart. 
+The following command can be used to have the Operator perform a rolling restart of the Postgres cluster.
+
+```shell
+kubectl patch postgrescluster/hippo -n postgres-operator --type merge --patch '{"spec":{"metadata":{"annotations":{"restarted":"'"$(date)"'"}}}}'
+```
+
 ## Database initialization script
 
 Using `spec.databaseInitSQL` you can instruct the Operator to execute an initialization script when
@@ -174,8 +176,7 @@ In the `hippo/prod` directory you will notice a file named `init.sql`.  During t
 of the cluster, Kustomize has been taking this SQL script and creating a configmap object.  You
 can see this by viewing the `hippo/prod/kustomization.yaml` file.
 
-To get the Operator to use this script, uncomment out the `spec.databaseInitSQL` section in
-the `hippo/prod/hippo-pg.yaml` file.  
+Uncomment out the `spec.databaseInitSQL` section in the `hippo/prod/hippo-pg.yaml` file.  
 
 ```text
   databaseInitSQL:

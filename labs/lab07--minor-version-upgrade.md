@@ -22,16 +22,9 @@ To perform upgrades of minor versions and/or monthly build versions, edit the `h
 and switch the image tag to the next minor versions available.  The next available Postgres image is currently commented
 out, comment out the current `spec.image` and uncomment the newer minor version.
 
-Next, switch to the next version of pgBackrest.  To do this, comment out the current `spec.backups.pgbackrest.image` and 
-uncomment out the newer version.
-
 ```text
 spec:
    image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.9-2520
-...
- backups:
-    pgbackrest:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi9-2.54.2-2520 
 ```
 
 With the images changed, apply the updated manifest.

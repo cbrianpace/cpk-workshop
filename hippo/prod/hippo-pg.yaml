@@ -3,8 +3,8 @@ kind: PostgresCluster
 metadata:
   name: hippo
 spec:
-  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.8-2516
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.9-2520
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.8-2516
+  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-16.9-2520
   #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.5-2520  
   postgresVersion: 16
   shutdown: false
@@ -13,8 +13,8 @@ spec:
     parameters:
       max_parallel_workers: 2
       max_worker_processes: 2
-      shared_buffers: 512MB
-      work_mem: 8MB
+      shared_buffers: 256MB
+      work_mem: 4MB
       archive_timeout: 120
 
   instances:
@@ -69,25 +69,25 @@ spec:
     pgmonitor:
       exporter: {}
 
-  service:
-    type: NodePort
+  # service:
+  #   type: NodePort
 
-  users:
-    - name: appuser
-      databases:
-        - appdev
-        - appuat
+  # users:
+  #   - name: appuser
+  #     databases:
+  #       - appdev
+  #       - appuat
 
-  databaseInitSQL:
-    key: init.sql
-    name: hippo-init-sql
+  # databaseInitSQL:
+  #   key: init.sql
+  #   name: hippo-init-sql
 
-  customReplicationTLSSecret:
-    name: hippo-repl-tls-custom
-  customTLSSecret:
-    name: hippo-tls-custom
+  # customReplicationTLSSecret:
+  #   name: hippo-repl-tls-custom
+  # customTLSSecret:
+  #   name: hippo-tls-custom
   
-  standby:
-    enabled: false
-    host: hippo-dr-primary
-    port: 5432
+  # standby:
+  #   enabled: false
+  #   host: hippo-dr-primary
+  #   port: 5432

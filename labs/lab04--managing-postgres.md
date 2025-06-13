@@ -23,7 +23,7 @@ Labels can be used to identify resources related to a specific Postgres cluser. 
 most common uses of labels is to determine which pod is the current leader.
 
 ```shell
-kubectl describe $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name)
+kubectl get $(kubectl get pod -l postgres-operator.crunchydata.com/role=master -o name) -o=jsonpath='{.metadata.labels}' | jq
 ```
 
 The following command is handy to get the pods and show the current role the pod is playing
@@ -130,6 +130,8 @@ kubectl get pods
 kubectl get statefulsets
 
 kubectl get postgrescluster --all-namespaces
+
+kubectl get pv
 ```
 
 ## Recreate the Postgres cluster

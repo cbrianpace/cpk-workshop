@@ -27,3 +27,5 @@ Finally, connect to Postgres using psql.
 ```shell
 psql "postgresql://hippo@hippo-primary.postgres-operator.svc.cluster.local:5432/hippo?sslmode=require"
 ```
+
+Type `exit` to exit out of psql.

@@ -74,3 +74,5 @@ Continue to watch the pod roles and directory and observe the failover and self-
 ```shell
 ls /pgdata/pg16
 ```
+
+Type `exit` to get out of the pod and back to your classroom terminal.

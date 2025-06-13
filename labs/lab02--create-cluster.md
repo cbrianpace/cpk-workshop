@@ -35,7 +35,7 @@ Notice the different pods that are created as well as an initial backup.
 Using the following command will show the `postgresoperator` named `hippo`.
 
 ```shell
-904kubectl get postgrescluster
+kubectl get postgrescluster
 ```
 
 View the stateful sets.

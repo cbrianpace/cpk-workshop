@@ -145,7 +145,7 @@ psql -U appuser -d postgres -h hippo-dr-primary.postgres-operator -c "insert int
 Now connect to `hippo/prod` and verify a row exists in the `test` table.
 
 ```shell
-psql -U appuser -d postgres -h hippo-dr-primary.postgres-operator -c "select * from test"
+psql -U appuser -d postgres -h hippo-primary.postgres-operator -c "select * from test"
 ```
 
 ## Clean-up
