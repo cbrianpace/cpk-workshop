@@ -1,4 +1,4 @@
-# Managing Postgrest Lab
+# Postgres Objects Lab
 
 ## Objectives
 
